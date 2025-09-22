@@ -19,7 +19,7 @@ Microservicio encargado de gestionar las entidades **Persona** y **Cliente** den
 cd ms-users
 ./gradlew bootRun --args='--spring.profiles.active=dev'
 ```
-La API quedará disponible en `http://localhost:8080` y la documentación en `http://localhost:8080/swagger-ui.html`.
+La API quedará disponible en `http://localhost:8082` y la documentación en `http://localhost:8082/swagger-ui.html`.
 
 ### Ejecución con Docker (perfil `docker`)
 1. Empaqueta el servicio:

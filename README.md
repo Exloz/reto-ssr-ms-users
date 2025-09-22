@@ -2,6 +2,16 @@
 
 Microservicio encargado de gestionar las entidades **Persona** y **Cliente** dentro del dominio financiero. Implementa una arquitectura en capas con Spring Boot, persiste en PostgreSQL mediante Spring Data JPA y publica eventos en Kafka para notificar a otros servicios.
 
+## 🚀 Clonación desde Orquestación
+
+Para clonar todo el proyecto completo (orquestador + microservicios):
+
+```bash
+git clone --recursive https://github.com/Exloz/reto-sst-orches.git
+cd reto-sst-orches
+# Los microservicios estarán disponibles en ms-transactions/ y ms-users/
+```
+
 ## Tecnologías Principales
 - Java 21 · Spring Boot 3.5.6
 - Spring Web + Validation + Data JPA

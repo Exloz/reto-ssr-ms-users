@@ -3,17 +3,17 @@ package com.sofka.ms_users.service;
 import com.sofka.ms_users.dto.PersonaDTO;
 import com.sofka.ms_users.model.Persona;
 import com.sofka.ms_users.repository.PersonaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class PersonaService {
+@RequiredArgsConstructor
+public class PersonaService implements PersonaServiceInterface {
 
-    @Autowired
-    private PersonaRepository personaRepository;
+    private final PersonaRepository personaRepository;
 
     public List<Persona> findAll() {
         return personaRepository.findAll();

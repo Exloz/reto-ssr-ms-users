@@ -1,109 +1,80 @@
 # Servicio ms-users
 
-Este es el microservicio ms-users para la gestión de las entidades Persona y Cliente en el sistema financiero.
+Microservicio encargado de gestionar las entidades **Persona** y **Cliente** dentro del dominio financiero. Implementa una arquitectura en capas con Spring Boot, persiste en PostgreSQL mediante Spring Data JPA y publica eventos en Kafka para notificar a otros servicios.
 
-## Descripción
+## Tecnologías Principales
+- Java 21 · Spring Boot 3.5.6
+- Spring Web + Validation + Data JPA
+- PostgreSQL (prod/dev) · H2 (tests)
+- Spring Cloud Stream + Kafka
+- Gradle · Docker
 
-El servicio ms-users implementa una arquitectura en capas y maneja las operaciones CRUD para las entidades Persona y Cliente. Utiliza Spring Boot con JPA para la persistencia de datos y Kafka para la comunicación asíncrona con otros servicios.
-
-## Tecnologías
-
-- Java 21
-- Spring Boot 3.5.6
-- Spring Data JPA
-- PostgreSQL
-- Kafka
-- Gradle
-- Docker
-
-## Configuración
-
+## Configuración y Puesta en Marcha
 ### Prerrequisitos
+- Java 21
+- Docker / Docker Compose
 
-- Java 21 instalado
-- Docker y Docker Compose
-- Gradle (incluido en el proyecto)
-
-### Base de Datos
-
-1. Inicia PostgreSQL y Kafka usando Docker Compose desde el directorio raíz del proyecto:
-   ```bash
-   docker-compose up -d
-   ```
-
-2. El servicio se conectará automáticamente a la base de datos PostgreSQL configurada.
-
-### Ejecución
-
-1. Ejecuta la aplicación:
-   ```bash
-   ./gradlew bootRun
-   ```
-
-2. La aplicación estará disponible en: http://localhost:8080
-
-## Documentación de la API
-
-La documentación de la API está disponible en Swagger UI: http://localhost:8080/swagger-ui.html
-
-## Endpoints
-
-### Persona
-
-- **GET /personas** - Obtener todas las personas
-- **GET /personas/{identificacion}** - Obtener persona por identificación
-- **POST /personas** - Crear una nueva persona
-- **PUT /personas/{identificacion}** - Actualizar persona
-- **DELETE /personas/{identificacion}** - Eliminar persona
-
-### Cliente
-
-- **GET /clientes** - Obtener todos los clientes
-- **GET /clientes/{clienteId}** - Obtener cliente por ID
-- **GET /clientes/estado/{estado}** - Obtener clientes por estado
-- **POST /clientes** - Crear un nuevo cliente
-- **PUT /clientes/{clienteId}** - Actualizar cliente
-- **DELETE /clientes/{clienteId}** - Eliminar cliente
-
-## Perfiles de Configuración
-
-- **dev**: Utiliza base de datos PostgreSQL para desarrollo
-- **test**: Utiliza base de datos H2 en memoria para pruebas
-
-Para ejecutar con un perfil específico:
+### Ejecución Local (perfil `dev`)
 ```bash
+cd ms-users
 ./gradlew bootRun --args='--spring.profiles.active=dev'
 ```
+La API quedará disponible en `http://localhost:8080` y la documentación en `http://localhost:8080/swagger-ui.html`.
+
+### Ejecución con Docker (perfil `docker`)
+1. Empaqueta el servicio:
+   ```bash
+   cd ms-users && ./gradlew bootJar
+   ```
+2. Desde la raíz del repositorio levanta toda la plataforma (PostgreSQL, Kafka, ms-users y ms-transactions):
+   ```bash
+   docker compose build
+   docker compose up -d
+   ```
+   Los servicios usan la red interna (`postgres`, `kafka`) definida en `docker-compose.yml` y cargan el perfil `docker` automáticamente.
+3. Si necesitas inspeccionar o recrear el esquema manualmente, utiliza `BaseDatos.sql` ubicado en la raíz del repositorio.
+
+### Variables y Perfiles Disponibles
+- `dev` (por defecto): PostgreSQL local (`localhost:5432`) con credenciales `postgres/secret`.
+- `docker`: apuntan a los hosts de los contenedores (`postgres:5432`, `kafka:9092`).
+
+## Endpoints Principales
+### Personas
+- `GET /personas`
+- `GET /personas/{identificacion}`
+- `POST /personas`
+- `PUT /personas/{identificacion}`
+- `DELETE /personas/{identificacion}`
+
+### Clientes
+- `GET /clientes`
+- `GET /clientes/{clienteId}`
+- `GET /clientes/estado/{estado}`
+- `POST /clientes`
+- `PUT /clientes/{clienteId}`
+- `DELETE /clientes/{clienteId}`
+
+## Eventos y Comunicación Asíncrona
+- `ClienteCreatedEvent`: se publica en el *binding* `clienteCreated-out-0` (Kafka). El ms-transactions crea cuentas iniciales al consumir este evento.
+- La publicación usa `StreamBridge` y lanza error si Kafka está caído; al estar el método envuelto en una transacción JPA, el registro del cliente se revierte ante un fallo en la mensajería.
+- El binder define `auto.create.topics=true` para generar `cliente-created-topic` si no existe.
 
 ## Pruebas
-
-Ejecuta las pruebas unitarias e de integración:
+Ejecuta todas las pruebas (unitarias, de controlador e integración):
 ```bash
+cd ms-users
 ./gradlew test
 ```
-
-## Eventos
-
-El servicio publica eventos a través de Kafka cuando se crean clientes:
-- **ClienteCreatedEvent**: Se publica cuando se crea un nuevo cliente
+El perfil `test` se aplica automáticamente durante el ciclo de pruebas.
 
 ## Estructura del Proyecto
-
 ```
 src/main/java/com/sofka/ms_users/
-├── controller/     # Controladores REST
-├── dto/           # Objetos de transferencia de datos
-├── event/         # Eventos para comunicación asíncrona
-├── exception/     # Manejo de excepciones
-├── model/         # Entidades JPA
-├── repository/    # Repositorios de datos
-└── service/       # Lógica de negocio
+├── controller       # Entradas REST
+├── dto              # DTO de entrada/salida
+├── event            # Eventos publicados
+├── exception        # Manejo global de errores
+├── model            # Entidades JPA (Persona, Cliente)
+├── repository       # Repositorios Spring Data
+└── service          # Reglas de negocio y orquestación
 ```
-
-## Despliegue
-
-Para desplegar en producción, asegúrate de:
-1. Configurar las variables de entorno para la base de datos
-2. Usar HTTPS
-3. Configurar autenticación JWT si es necesario
-4. Ajustar los límites de recursos según sea necesario

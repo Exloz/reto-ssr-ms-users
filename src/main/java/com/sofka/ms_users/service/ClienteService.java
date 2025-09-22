@@ -4,7 +4,7 @@ import com.sofka.ms_users.dto.ClienteDTO;
 import com.sofka.ms_users.event.ClienteCreatedEvent;
 import com.sofka.ms_users.model.Cliente;
 import com.sofka.ms_users.repository.ClienteRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,13 +12,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class ClienteService {
+@RequiredArgsConstructor
+public class ClienteService implements ClienteServiceInterface {
 
-    @Autowired
-    private ClienteRepository clienteRepository;
-
-    @Autowired
-    private EventProducerService eventProducerService;
+    private final ClienteRepository clienteRepository;
+    private final EventProducerService eventProducerService;
 
     public List<Cliente> findAll() {
         return clienteRepository.findAll();

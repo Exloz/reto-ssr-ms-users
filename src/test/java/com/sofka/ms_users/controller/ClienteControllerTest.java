@@ -2,10 +2,10 @@ package com.sofka.ms_users.controller;
 
 import com.sofka.ms_users.model.Cliente;
 import com.sofka.ms_users.service.ClienteService;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -24,8 +24,7 @@ class ClienteControllerTest {
     @BeforeEach
     void setUp() {
         clienteService = Mockito.mock(ClienteService.class);
-        ClienteController controller = new ClienteController();
-        ReflectionTestUtils.setField(controller, "clienteService", clienteService);
+        ClienteController controller = new ClienteController(clienteService);
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
 

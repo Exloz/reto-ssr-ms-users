@@ -5,6 +5,7 @@ import com.sofka.ms_users.model.Persona;
 import com.sofka.ms_users.repository.PersonaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +24,7 @@ public class PersonaService implements PersonaServiceInterface {
         return personaRepository.findByIdentificacion(identificacion);
     }
 
+    @Transactional
     public Persona save(PersonaDTO personaDTO) {
         Persona persona = new Persona();
         persona.setIdentificacion(personaDTO.getIdentificacion());
@@ -34,6 +36,7 @@ public class PersonaService implements PersonaServiceInterface {
         return personaRepository.save(persona);
     }
 
+    @Transactional
     public Persona update(String identificacion, PersonaDTO personaDTO) {
         Optional<Persona> existing = personaRepository.findByIdentificacion(identificacion);
         if (existing.isPresent()) {
@@ -48,6 +51,7 @@ public class PersonaService implements PersonaServiceInterface {
         throw new RuntimeException("Persona not found");
     }
 
+    @Transactional
     public void delete(String identificacion) {
         personaRepository.deleteById(identificacion);
     }

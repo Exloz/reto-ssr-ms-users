@@ -6,6 +6,7 @@ import com.sofka.ms_users.model.Cliente;
 import com.sofka.ms_users.repository.ClienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,6 +32,7 @@ public class ClienteService {
         return clienteRepository.findByEstado(estado);
     }
 
+    @Transactional
     public Cliente save(ClienteDTO clienteDTO) {
         Cliente cliente = new Cliente();
         cliente.setIdentificacion(clienteDTO.getIdentificacion());
@@ -41,11 +43,13 @@ public class ClienteService {
         cliente.setTelefono(clienteDTO.getTelefono());
         cliente.setContrasena(clienteDTO.getContrasena());
         cliente.setEstado(clienteDTO.getEstado());
+        cliente.setClienteId(generateClienteId());
         Cliente savedCliente = clienteRepository.save(cliente);
         eventProducerService.sendClienteCreatedEvent(new ClienteCreatedEvent(savedCliente.getClienteId(), savedCliente.getNombre(), savedCliente.getIdentificacion()));
         return savedCliente;
     }
 
+    @Transactional
     public Cliente update(Long clienteId, ClienteDTO clienteDTO) {
         Optional<Cliente> existing = clienteRepository.findByClienteId(clienteId);
         if (existing.isPresent()) {
@@ -63,7 +67,14 @@ public class ClienteService {
         throw new RuntimeException("Cliente not found");
     }
 
+    @Transactional
     public void delete(Long clienteId) {
-        clienteRepository.deleteById(clienteId);
+        Cliente existing = clienteRepository.findByClienteId(clienteId)
+                .orElseThrow(() -> new RuntimeException("Cliente not found"));
+        clienteRepository.delete(existing);
+    }
+
+    private Long generateClienteId() {
+        return clienteRepository.getNextClienteId();
     }
 }

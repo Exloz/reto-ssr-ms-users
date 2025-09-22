@@ -1,33 +1,36 @@
 package com.sofka.ms_users.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sofka.ms_users.dto.ClienteDTO;
 import com.sofka.ms_users.model.Cliente;
 import com.sofka.ms_users.service.ClienteService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
+import org.mockito.Mockito;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.Optional;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(ClienteController.class)
-public class ClienteControllerTest {
+class ClienteControllerTest {
 
-    @Autowired
     private MockMvc mockMvc;
-
-    @MockBean
     private ClienteService clienteService;
 
+    @BeforeEach
+    void setUp() {
+        clienteService = Mockito.mock(ClienteService.class);
+        ClienteController controller = new ClienteController();
+        ReflectionTestUtils.setField(controller, "clienteService", clienteService);
+        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+    }
+
     @Test
-    public void shouldGetClienteById() throws Exception {
+    void shouldGetClienteById() throws Exception {
         Cliente cliente = new Cliente();
         cliente.setClienteId(1L);
         cliente.setNombre("Test User");
